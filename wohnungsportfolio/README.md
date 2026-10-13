@@ -7,7 +7,7 @@ Liebevoll gestaltete, halb-professionelle Wohnungsbewerbung (A4, 2 Seiten) zum B
 | `Wohnungsportfolio_Lea_Rager.idml` | **In InDesign öffnen** (Datei › Öffnen) und als `.indd` speichern |
 | `Wohnungsportfolio_Lea_Rager_Vorschau.pdf` | Vorschau, wie das Layout aussieht |
 | `Unterlagen_Deckblatt_Vorschau.pdf` | Nur Seite 2 als eigenes PDF (Deckblatt für die Unterlagen) |
-| `Wohnungsportfolio_Lea_Rager_Apple.idml` | **Variante im Apple-Stil** (siehe unten) |
+| `Wohnungsportfolio_Lea_Rager_Apple.idml` | **Variante im Apple-Stil, warm** (siehe unten, mit Platzhaltern) |
 | `Wohnungsportfolio_Lea_Rager_Apple_Vorschau.pdf` | Vorschau der Apple-Variante |
 | `build_portfolio.py` | Generator (warmes Design) und gemeinsame Engine für IDML und PDF |
 | `build_portfolio_apple.py` | Generator der Apple-Variante |
@@ -29,16 +29,28 @@ Liebevoll gestaltete, halb-professionelle Wohnungsbewerbung (A4, 2 Seiten) zum B
 4. Schriften: **Georgia** und **Arial** (auf Mac und Windows vorinstalliert).
    Farben und Absatzformate (Name, Fließtext, Karten …) sind als Farbfelder bzw. Formate angelegt.
 
-## Variante im Apple-Stil
+## Variante im Apple-Stil (warm)
 
-Hellgrauer Hintergrund (#F5F5F7), weiße Karten mit runden Ecken, Listen wie in den
-iOS-Einstellungen mit farbigen Symbolen, viel Weißraum, Akzentfarbe Apple-Blau.
+Folgt Apples Designprinzipien (Klarheit, viel Weißraum, klare Hierarchie, Foto als Hauptdarsteller),
+wirkt aber bewusst warm: cremefarbener Hintergrund, große abgerundete Ecken, Pastell-Kacheln
+(„Bento“), Merkmale als Pillen, Kontaktfeld in Terrakotta.
 
 - Schrift: **Inter** (kostenlos, sehr nah an Apples SF Pro). Vorher installieren:
   [rsms.me/inter](https://rsms.me/inter/) oder Google Fonts. Ohne Inter: in InDesign
   *Schrift › Schriftart suchen/ersetzen* › „Inter“ durch „Helvetica Neue“ ersetzen.
-- Platzhalter in Blau: `[Datum]`, `[Telefonnummer]`, `[E-Mail-Adresse]`.
-- Foto wie oben in den runden Rahmen platzieren.
+- Foto: den abgerundeten Rahmen links oben anklicken › *Datei › Platzieren…* – füllt sich automatisch.
+- Platzhalter in Terrakotta: `[€ / Monat]`, `[Alter]`, `[folgt]` (und in der Repo-Version Telefon/E-Mail).
+
+### Persönliche Daten
+
+Das Repo ist öffentlich – Foto, Telefonnummer und E-Mail liegen deshalb nur lokal in `privat/`
+(per `.gitignore` ausgeschlossen). `privat/daten.json` enthält z. B.:
+
+```json
+{ "telefon": "…", "email": "…", "foto": "Lea_Foto.jpg", "alter": "…", "netto": "…", "arbeitgeber": "…" }
+```
+
+`python3 build_portfolio_apple.py --fonts <ordner> --privat` erzeugt daraus IDML und fertiges PDF in `privat/`.
 
 ## Gehaltszettel anhängen
 

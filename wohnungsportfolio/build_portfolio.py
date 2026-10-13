@@ -57,8 +57,10 @@ CHAR_STYLES = {
 
 
 # ---------------------------------------------------------------- Layout-Elemente
-def rect(x, y, w, h, fill, radius=0, stroke=None, sw=0, name=""):
-    return dict(kind="rect", x=x, y=y, w=w, h=h, fill=fill, radius=radius, stroke=stroke, sw=sw, name=name)
+def rect(x, y, w, h, fill, radius=0, stroke=None, sw=0, name="", photo=False, image=None):
+    """photo=True: leerer Grafikrahmen in InDesign; image: Bild nur für die PDF-Vorschau."""
+    return dict(kind="rect", x=x, y=y, w=w, h=h, fill=fill, radius=radius, stroke=stroke, sw=sw, name=name,
+                photo=photo, image=image)
 
 
 def oval(x, y, w, h, fill=None, stroke=None, sw=0, photo=False, name=""):
@@ -256,6 +258,10 @@ def oval_points(x, y, w, h):
     ]
 
 
+FIT_XML = ('<FrameFittingOption AutoFit="true" FittingOnEmptyFrame="FillProportionally" '
+           'FittingAlignment="CenterAnchor"/>')
+
+
 class IdmlWriter:
     def __init__(self):
         self.n = 0
@@ -282,13 +288,14 @@ class IdmlWriter:
                 r = f(it["radius"] * MM)
                 corners = "".join(f' {c}CornerOption="RoundedCorner" {c}CornerRadius="{r}"'
                                   for c in ("TopLeft", "TopRight", "BottomLeft", "BottomRight"))
-            return (f'<Rectangle Self="{self.uid()}" ContentType="Unassigned" {common} '
+            ct = "GraphicType" if it["photo"] else "Unassigned"
+            return (f'<Rectangle Self="{self.uid()}" ContentType="{ct}" {common} '
                     f'FillColor="{color_ref(it["fill"])}" StrokeColor="{color_ref(it["stroke"])}" '
-                    f'StrokeWeight="{f(it["sw"])}"{corners}>{path_xml(rect_points(x0, y0, w, h))}</Rectangle>')
+                    f'StrokeWeight="{f(it["sw"])}"{corners}>{path_xml(rect_points(x0, y0, w, h))}'
+                    f'{FIT_XML if it["photo"] else ""}</Rectangle>')
         if kind == "oval":
             ct = "GraphicType" if it["photo"] else "Unassigned"
-            fit = ('<FrameFittingOption AutoFit="true" FittingOnEmptyFrame="FillProportionally" '
-                   'FittingAlignment="CenterAnchor"/>' if it["photo"] else "")
+            fit = FIT_XML if it["photo"] else ""
             return (f'<Oval Self="{self.uid()}" ContentType="{ct}" {common} '
                     f'FillColor="{color_ref(it["fill"])}" StrokeColor="{color_ref(it["stroke"])}" '
                     f'StrokeWeight="{f(it["sw"])}" StrokeAlignment="InsideAlignment">'
@@ -523,10 +530,23 @@ def render_pdf(path, font_dir, pages=None):
                     c.setStrokeColor(col(it["stroke"]))
                     c.setLineWidth(it["sw"])
                 args = (it["x"] * MM, Y(it["y"] + it["h"]), it["w"] * MM, it["h"] * MM)
-                if it["radius"]:
-                    c.roundRect(*args, it["radius"] * MM, stroke=bool(it["stroke"]), fill=bool(it["fill"]))
-                else:
-                    c.rect(*args, stroke=bool(it["stroke"]), fill=bool(it["fill"]))
+                if it["fill"] or it["stroke"]:
+                    if it["radius"]:
+                        c.roundRect(*args, it["radius"] * MM, stroke=bool(it["stroke"]), fill=bool(it["fill"]))
+                    else:
+                        c.rect(*args, stroke=bool(it["stroke"]), fill=bool(it["fill"]))
+                if it.get("image") and os.path.exists(it["image"]):
+                    from reportlab.lib.utils import ImageReader
+                    img = ImageReader(it["image"])
+                    iw, ih = img.getSize()
+                    x, y, w, h = args
+                    scale = max(w / iw, h / ih)  # wie „Rahmen proportional füllen“
+                    c.saveState()
+                    clip = c.beginPath()
+                    clip.roundRect(x, y, w, h, it["radius"] * MM)
+                    c.clipPath(clip, stroke=0, fill=0)
+                    c.drawImage(img, x + (w - iw * scale) / 2, y + (h - ih * scale) / 2, iw * scale, ih * scale)
+                    c.restoreState()
             elif k == "oval":
                 sw = it["sw"]
                 inset = sw / 2 / MM if it["stroke"] else 0  # Kontur innen, wie in InDesign
