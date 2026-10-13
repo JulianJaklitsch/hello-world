@@ -7,7 +7,10 @@ Liebevoll gestaltete, halb-professionelle Wohnungsbewerbung (A4, 2 Seiten) zum B
 | `Wohnungsportfolio_Lea_Rager.idml` | **In InDesign öffnen** (Datei › Öffnen) und als `.indd` speichern |
 | `Wohnungsportfolio_Lea_Rager_Vorschau.pdf` | Vorschau, wie das Layout aussieht |
 | `Unterlagen_Deckblatt_Vorschau.pdf` | Nur Seite 2 als eigenes PDF (Deckblatt für die Unterlagen) |
-| `build_portfolio.py` | Generator, der IDML und PDF erzeugt |
+| `Wohnungsportfolio_Lea_Rager_Apple.idml` | **Variante im Apple-Stil** (siehe unten) |
+| `Wohnungsportfolio_Lea_Rager_Apple_Vorschau.pdf` | Vorschau der Apple-Variante |
+| `build_portfolio.py` | Generator (warmes Design) und gemeinsame Engine für IDML und PDF |
+| `build_portfolio_apple.py` | Generator der Apple-Variante |
 
 ## Aufbau
 
@@ -26,6 +29,17 @@ Liebevoll gestaltete, halb-professionelle Wohnungsbewerbung (A4, 2 Seiten) zum B
 4. Schriften: **Georgia** und **Arial** (auf Mac und Windows vorinstalliert).
    Farben und Absatzformate (Name, Fließtext, Karten …) sind als Farbfelder bzw. Formate angelegt.
 
+## Variante im Apple-Stil
+
+Hellgrauer Hintergrund (#F5F5F7), weiße Karten mit runden Ecken, Listen wie in den
+iOS-Einstellungen mit farbigen Symbolen, viel Weißraum, Akzentfarbe Apple-Blau.
+
+- Schrift: **Inter** (kostenlos, sehr nah an Apples SF Pro). Vorher installieren:
+  [rsms.me/inter](https://rsms.me/inter/) oder Google Fonts. Ohne Inter: in InDesign
+  *Schrift › Schriftart suchen/ersetzen* › „Inter“ durch „Helvetica Neue“ ersetzen.
+- Platzhalter in Blau: `[Datum]`, `[Telefonnummer]`, `[E-Mail-Adresse]`.
+- Foto wie oben in den runden Rahmen platzieren.
+
 ## Gehaltszettel anhängen
 
 *Datei › Exportieren › Adobe PDF (Druck)*, dann in Acrobat (*Dateien kombinieren*) oder in der
@@ -37,4 +51,5 @@ Alternativ Seite 1 alleine exportieren und die Unterlagen samt Deckblatt als zwe
 ```bash
 python3 build_portfolio.py                     # nur IDML
 python3 build_portfolio.py --fonts <ordner>    # + PDF-Vorschau (braucht Gelasio-*.ttf, metrisch = Georgia)
+python3 build_portfolio_apple.py --fonts <ordner>   # Apple-Variante (braucht Inter-400/500/600/700.ttf)
 ```

@@ -261,7 +261,7 @@ class IdmlWriter:
         self.n = 0
         self.stories = {}
 
-    def uid(self, prefix="u"):
+    def uid(self, prefix="ui"):
         self.n += 1
         return f"{prefix}{self.n:x}"
 
@@ -491,9 +491,14 @@ def render_pdf(path, font_dir, pages=None):
         ("Arial", "Regular"): os.path.join(lib, "LiberationSans-Regular.ttf"),
         ("Arial", "Bold"): os.path.join(lib, "LiberationSans-Bold.ttf"),
         ("Arial", "Italic"): os.path.join(lib, "LiberationSans-Italic.ttf"),
+        ("Inter", "Regular"): os.path.join(font_dir, "Inter-400.ttf"),
+        ("Inter", "Medium"): os.path.join(font_dir, "Inter-500.ttf"),
+        ("Inter", "SemiBold"): os.path.join(font_dir, "Inter-600.ttf"),
+        ("Inter", "Bold"): os.path.join(font_dir, "Inter-700.ttf"),
     }
     for (fam, sty), file in fonts.items():
-        pdfmetrics.registerFont(TTFont(f"{fam}-{sty}", file))
+        if os.path.exists(file):
+            pdfmetrics.registerFont(TTFont(f"{fam}-{sty}", file))
 
     def col(key):
         r, g, b = COLORS[key][1]
@@ -512,15 +517,16 @@ def render_pdf(path, font_dir, pages=None):
         for it in items:
             k = it["kind"]
             if k == "rect":
-                c.setFillColor(col(it["fill"]))
+                if it["fill"]:
+                    c.setFillColor(col(it["fill"]))
                 if it["stroke"]:
                     c.setStrokeColor(col(it["stroke"]))
                     c.setLineWidth(it["sw"])
                 args = (it["x"] * MM, Y(it["y"] + it["h"]), it["w"] * MM, it["h"] * MM)
                 if it["radius"]:
-                    c.roundRect(*args, it["radius"] * MM, stroke=bool(it["stroke"]), fill=1)
+                    c.roundRect(*args, it["radius"] * MM, stroke=bool(it["stroke"]), fill=bool(it["fill"]))
                 else:
-                    c.rect(*args, stroke=bool(it["stroke"]), fill=1)
+                    c.rect(*args, stroke=bool(it["stroke"]), fill=bool(it["fill"]))
             elif k == "oval":
                 sw = it["sw"]
                 inset = sw / 2 / MM if it["stroke"] else 0  # Kontur innen, wie in InDesign
@@ -586,6 +592,8 @@ def render_pdf(path, font_dir, pages=None):
                 top = Y(it["y"])
                 if it["valign"] == "CenterAlign":
                     top -= (it["h"] * MM - total) / 2
+                elif it["valign"] == "BottomAlign":
+                    top -= it["h"] * MM - total
                 for h, a, draw in blocks:
                     draw(it["x"] * MM, top)
                     top -= h + a
