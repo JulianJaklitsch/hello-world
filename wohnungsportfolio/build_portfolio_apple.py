@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Wohnungsportfolio Lea Rager – Apple-Designprinzipien, aber warm und freundlich.
+"""Wohnungsportfolio Lea Rager – Apple-Designprinzipien, aber freundlich.
 
-Klarheit, viel Weißraum, klare Hierarchie und das Foto als Hauptdarsteller; dazu warme Pastell-
-Kacheln („Bento“) statt App-Listen. Nutzt die Engine aus build_portfolio.py.
+Klarheit, viel Weißraum, klare Hierarchie und das Foto als Hauptdarsteller; dazu Kacheln („Bento“) in
+Blau, Gelb und neutralem Grau statt App-Listen. Nutzt die Engine aus build_portfolio.py.
 
 Persönliche Daten (Telefon, E-Mail, Foto …) stehen NICHT im Repo, sondern in privat/daten.json
 (per .gitignore ausgeschlossen). Ohne --privat entsteht eine Version mit Platzhaltern.
@@ -29,41 +29,40 @@ DATEN = {
     "arbeitgeber": None,
 }
 
-TINTS = {  # Kachelfarbe (hell) und passende dunkle Schriftfarbe
-    "Apricot": ((252, 229, 214), (180, 87, 58)),
-    "Salbei": ((227, 236, 220), (88, 116, 74)),
-    "Himmel": ((221, 233, 244), (61, 106, 146)),
-    "Lavendel": ((233, 227, 243), (103, 89, 154)),
-    "Rose": ((248, 223, 227), (161, 78, 94)),
-    "Sand": ((242, 234, 219), (134, 104, 58)),
+NAVY, BLAU, GELB = (22, 33, 58), (43, 92, 204), (247, 201, 72)
+TINTS = {  # Fläche, Label-Farbe, Wert-Farbe – nur Blau, Gelb, Marine und neutrales Grau
+    "Neutral": ((241, 242, 245), BLAU, NAVY),
+    "Blau": (BLAU, (214, 226, 250), (255, 255, 255)),
+    "Gelb": (GELB, NAVY, NAVY),
 }
 
 bp.COLORS.clear()
 bp.COLORS.update({
-    "Hintergrund": ("Hintergrund", (251, 248, 244)),
-    "Text": ("Text", (43, 37, 34)),
-    "Grau": ("Grau", (117, 105, 95)),
-    "Akzent": ("Akzent Terrakotta", (201, 96, 63)),
-    "AkzentHell": ("Akzent hell", (248, 222, 210)),
+    "Hintergrund": ("Hintergrund", (250, 250, 248)),
+    "Text": ("Marine", NAVY),
+    "Grau": ("Grau", (100, 106, 120)),
+    "Blau": ("Blau", BLAU),
+    "Gelb": ("Gelb", GELB),
+    "BlauHell": ("Blau hell", (214, 226, 250)),
     "Weiss": ("Weiß", (255, 255, 255)),
-    "Karte": ("Karte", (243, 237, 229)),
-    "FotoPlatz": ("Foto Platzhalter", (239, 230, 220)),
+    "Karte": ("Karte", (241, 242, 245)),
+    "FotoPlatz": ("Foto Platzhalter", (234, 236, 241)),
 })
-for t, (light, dark) in TINTS.items():
-    bp.COLORS[t] = (t, light)
-    bp.COLORS[t + "Dunkel"] = (t + " dunkel", dark)
+for t, (bg, label, value) in TINTS.items():
+    bp.COLORS["Flaeche" + t] = ("Fläche " + t, bg)
+    bp.COLORS["Label" + t] = ("Label " + t, label)
+    bp.COLORS["Wert" + t] = ("Wert " + t, value)
 
 # family, style, size, leading, color, align, tracking, caps, space_after
 S = {
-    "Eyebrow": ("Inter", "SemiBold", 9, 12, "Akzent", "LeftAlign", 10, False, 0),
-    "Gruss": ("Inter", "Medium", 15, 19, "Akzent", "LeftAlign", -10, False, 0),
+    "Eyebrow": ("Inter", "SemiBold", 9, 12, "Blau", "LeftAlign", 10, False, 0),
+    "Gruss": ("Inter", "Medium", 15, 19, "Blau", "LeftAlign", -10, False, 0),
     "Name": ("Inter", "Bold", 38, 42, "Text", "LeftAlign", -25, False, 0),
     "Untertitel": ("Inter", "Regular", 11.5, 16.5, "Grau", "LeftAlign", -5, False, 0),
     "Sektion": ("Inter", "Bold", 17, 21, "Text", "LeftAlign", -15, False, 0),
     "Fliesstext": ("Inter", "Regular", 10.5, 16.5, "Text", "LeftAlign", 0, False, 0),
-    "KachelWert": ("Inter", "Bold", 18, 21, "Text", "LeftAlign", -20, False, 0),
     "KontaktSatz": ("Inter", "SemiBold", 14, 18, "Weiss", "LeftAlign", -10, False, 0),
-    "KontaktLabel": ("Inter", "Medium", 8, 10, "AkzentHell", "LeftAlign", 0, False, 0.3),
+    "KontaktLabel": ("Inter", "Medium", 8, 10, "Gelb", "LeftAlign", 0, False, 0.3),
     "KontaktWert": ("Inter", "SemiBold", 11, 14, "Weiss", "LeftAlign", 0, False, 1.8),
     "Fusszeile": ("Inter", "Regular", 7.5, 10, "Grau", "CenterAlign", 0, False, 0),
     "FotoHinweis": ("Inter", "Medium", 8.5, 12, "Grau", "CenterAlign", 0, False, 0),
@@ -72,25 +71,26 @@ S = {
     "DokTitel": ("Inter", "Bold", 14, 17, "Text", "LeftAlign", -15, False, 1),
     "DokText": ("Inter", "Regular", 9.5, 13, "Grau", "LeftAlign", 0, False, 0),
     "DankeTitel": ("Inter", "Bold", 20, 24, "Weiss", "LeftAlign", -20, False, 1.2),
-    "DankeText": ("Inter", "Regular", 9.5, 13, "AkzentHell", "LeftAlign", 0, False, 0),
+    "DankeText": ("Inter", "Regular", 9.5, 13, "BlauHell", "LeftAlign", 0, False, 0),
     "Frage": ("Inter", "SemiBold", 12, 16, "Text", "LeftAlign", -10, False, 0),
     "KontaktRechts": ("Inter", "Medium", 10.5, 15, "Text", "RightAlign", 0, False, 0),
 }
 for t in TINTS:
-    S["Pill" + t] = ("Inter", "Medium", 9, 11, t + "Dunkel", "CenterAlign", 0, False, 0)
-    S["KachelLabel" + t] = ("Inter", "SemiBold", 8.5, 11, t + "Dunkel", "LeftAlign", 0, False, 0)
-    S["DokStatus" + t] = ("Inter", "SemiBold", 8, 10, t + "Dunkel", "RightAlign", 0, False, 0)
+    S["Pill" + t] = ("Inter", "Medium", 9, 11, "Wert" + t, "CenterAlign", 0, False, 0)
+    S["KachelLabel" + t] = ("Inter", "SemiBold", 8.5, 11, "Label" + t, "LeftAlign", 0, False, 0)
+    S["KachelWert" + t] = ("Inter", "Bold", 18, 21, "Wert" + t, "LeftAlign", -20, False, 0)
+    S["DokStatus" + t] = ("Inter", "SemiBold", 8, 10, "Label" + t, "RightAlign", 0, False, 0)
 bp.PARA_STYLES.clear()
 bp.PARA_STYLES.update(S)
 bp.CHAR_STYLES.clear()
-bp.CHAR_STYLES.update({"Platzhalter": (None, "Akzent")})
+bp.CHAR_STYLES.update({"Platzhalter": (None, "Blau")})
 
 L, W = 18, 174
 R = 7            # großer Radius für Foto und Kacheln (weich, freundlich)
 
 
 def wert(value, platzhalter):
-    """Echter Wert oder sichtbarer Platzhalter in Akzentfarbe."""
+    """Echter Wert oder sichtbarer Platzhalter in Blau."""
     return value if value else [(platzhalter, "Platzhalter")]
 
 
@@ -101,22 +101,22 @@ def background():
 
 def pill(x, y, w, label, tint):
     h = 8.5
-    return [rect(x, y, w, h, tint, radius=h / 2, name=f"Pille {label}"),
+    return [rect(x, y, w, h, "Flaeche" + tint, radius=h / 2, name=f"Pille {label}"),
             text(x, y, w, h, [("Pill" + tint, label)], valign="CenterAlign", name=f"Pille Text {label}")]
 
 
 def tile(x, y, w, h, tint, label, value):
-    return [rect(x, y, w, h, tint, radius=R, name=f"Kachel {label}"),
+    return [rect(x, y, w, h, "Flaeche" + tint, radius=R, name=f"Kachel {label}"),
             text(x + 5, y + 4.5, w - 10, 6, [("KachelLabel" + tint, label)], name=f"Kachel Label {label}"),
-            text(x + 5, y + h - 13, w - 10, 9, [("KachelWert", value)], valign="BottomAlign",
+            text(x + 5, y + h - 13, w - 10, 9, [("KachelWert" + tint, value)], valign="BottomAlign",
                  name=f"Kachel Wert {label}")]
 
 
-def check_badge(x, y, tint):
+def check_badge(x, y):
     d = 8
     cx, cy = x + d / 2, y + d / 2
-    return [oval(x, y, d, d, fill="Weiss", name="Haken Kreis"),
-            line([(cx - 1.7, cy + 0.1), (cx - 0.5, cy + 1.3), (cx + 1.8, cy - 1.2)], tint + "Dunkel", 1.2,
+    return [oval(x, y, d, d, fill="Gelb", name="Haken Kreis"),
+            line([(cx - 1.7, cy + 0.1), (cx - 0.5, cy + 1.3), (cx + 1.8, cy - 1.2)], "Text", 1.2,
                  name="Haken")]
 
 
@@ -141,9 +141,9 @@ def page_profile(d):
                              ("Untertitel", "Auf der Suche nach einem Zuhause in Wien.")],
              name="Untertitel"),
     ]
-    items += pill(X, 86, 33, "Nichtraucherin", "Salbei")
-    items += pill(X + 36, 86, 35, "Keine Haustiere", "Himmel")
-    items += pill(X, 97, 36, "Ziehe allein ein", "Apricot")
+    items += pill(X, 86, 33, "Nichtraucherin", "Gelb")
+    items += pill(X + 36, 86, 35, "Keine Haustiere", "Gelb")
+    items += pill(X, 97, 36, "Ziehe allein ein", "Gelb")
 
     # Über mich
     items += [
@@ -162,12 +162,12 @@ def page_profile(d):
     gap, th = 5, 27
     tw = (W - 2 * gap) / 3
     tiles = [
-        ("Apricot", "Berufserfahrung", "2,5 Jahre"),
-        ("Salbei", "Wohnungswunsch", "2 Zimmer"),
-        ("Himmel", "Einzug · flexibel", "ab 2027"),
-        ("Lavendel", "Netto-Einkommen", wert(d["netto"], "[€ / Monat]")),
-        ("Rose", "Alter", wert(d["alter"], "[Alter]")),
-        ("Sand", "Arbeitgeber in Wien", wert(d["arbeitgeber"], "[folgt]")),
+        ("Blau", "Berufserfahrung", "2,5 Jahre"),
+        ("Gelb", "Wohnungswunsch", "2 Zimmer"),
+        ("Neutral", "Einzug · flexibel", "ab 2027"),
+        ("Neutral", "Netto-Einkommen", wert(d["netto"], "[€ / Monat]")),
+        ("Neutral", "Alter", wert(d["alter"], "[Alter]")),
+        ("Neutral", "Arbeitgeber in Wien", wert(d["arbeitgeber"], "[folgt]")),
     ]
     for i, (tint, label, value) in enumerate(tiles):
         items += tile(L + (i % 3) * (tw + gap), 187 + (i // 3) * (th + gap), tw, th, tint, label, value)
@@ -175,7 +175,7 @@ def page_profile(d):
     # Kontakt
     y = 252
     items += [
-        rect(L, y, W, 26, "Akzent", radius=R, name="Kontakt Fläche"),
+        rect(L, y, W, 26, "Text", radius=R, name="Kontakt Fläche"),
         text(L + 8, y, 80, 26, [("KontaktSatz", "Ich freue mich,"), ("KontaktSatz", "von Ihnen zu hören!")],
              valign="CenterAlign", name="Kontakt Satz"),
         text(L + 100, y, 70, 26, [
@@ -198,25 +198,25 @@ def page_documents(d):
             "Unterlagen auf den folgenden Seiten.")], name="Intro"),
     ]
     docs = [
-        ("Apricot", "Gehaltszettel", "Lohn- bzw. Gehaltsabrechnungen der letzten drei Monate", "beiliegend"),
-        ("Salbei", "Arbeitsbestätigung", "Bestätigung über das aufrechte Dienstverhältnis", "beiliegend"),
-        ("Himmel", "Lichtbildausweis", "Kopie von Reisepass oder Personalausweis", "beiliegend"),
-        ("Lavendel", "Meldezettel", "Aktuelle Meldebestätigung", "beiliegend"),
-        ("Rose", "KSV-Auskunft", "Bonitätsauskunft des KSV1870", "optional"),
+        ("Neutral", "Gehaltszettel", "Lohn- bzw. Gehaltsabrechnungen der letzten drei Monate", "beiliegend"),
+        ("Neutral", "Arbeitsbestätigung", "Bestätigung über das aufrechte Dienstverhältnis", "beiliegend"),
+        ("Neutral", "Lichtbildausweis", "Kopie von Reisepass oder Personalausweis", "beiliegend"),
+        ("Neutral", "Meldezettel", "Aktuelle Meldebestätigung", "beiliegend"),
+        ("Neutral", "KSV-Auskunft", "Bonitätsauskunft des KSV1870", "optional"),
     ]
     gap, th = 6, 40
     tw = (W - gap) / 2
     for i, (tint, title, desc, status) in enumerate(docs):
         x, y = L + (i % 2) * (tw + gap), 72 + (i // 2) * (th + gap)
-        items += [rect(x, y, tw, th, tint, radius=R, name=f"Kachel {title}")]
-        items += check_badge(x + 6, y + 6, tint)
+        items += [rect(x, y, tw, th, "Flaeche" + tint, radius=R, name=f"Kachel {title}")]
+        items += check_badge(x + 6, y + 6)
         items += [
             text(x + tw - 46, y + 7, 40, 6, [("DokStatus" + tint, status)], name=f"Status {title}"),
             text(x + 6, y + 18, tw - 12, 18, [("DokTitel", title), ("DokText", desc)], name=f"Text {title}"),
         ]
     x, y = L + tw + gap, 72 + 2 * (th + gap)
     items += [
-        rect(x, y, tw, th, "Akzent", radius=R, name="Kachel Danke"),
+        rect(x, y, tw, th, "Blau", radius=R, name="Kachel Danke"),
         text(x + 6, y + 6, tw - 12, th - 12, [("DankeTitel", "Danke!"), ("DankeText",
             "Bitte behandeln Sie meine Unterlagen vertraulich. Ich freue mich auf Ihre Rückmeldung.")],
             valign="BottomAlign", name="Text Danke"),

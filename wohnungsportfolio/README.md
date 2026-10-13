@@ -7,7 +7,7 @@ Liebevoll gestaltete, halb-professionelle Wohnungsbewerbung (A4, 2 Seiten) zum B
 | `Wohnungsportfolio_Lea_Rager.idml` | **In InDesign öffnen** (Datei › Öffnen) und als `.indd` speichern |
 | `Wohnungsportfolio_Lea_Rager_Vorschau.pdf` | Vorschau, wie das Layout aussieht |
 | `Unterlagen_Deckblatt_Vorschau.pdf` | Nur Seite 2 als eigenes PDF (Deckblatt für die Unterlagen) |
-| `Wohnungsportfolio_Lea_Rager_Apple.idml` | **Variante im Apple-Stil, warm** (siehe unten, mit Platzhaltern) |
+| `Wohnungsportfolio_Lea_Rager_Apple.idml` | **Variante im Apple-Stil** (siehe unten, mit Platzhaltern) |
 | `Wohnungsportfolio_Lea_Rager_Apple_Vorschau.pdf` | Vorschau der Apple-Variante |
 | `build_portfolio.py` | Generator (warmes Design) und gemeinsame Engine für IDML und PDF |
 | `build_portfolio_apple.py` | Generator der Apple-Variante |
@@ -29,17 +29,17 @@ Liebevoll gestaltete, halb-professionelle Wohnungsbewerbung (A4, 2 Seiten) zum B
 4. Schriften: **Georgia** und **Arial** (auf Mac und Windows vorinstalliert).
    Farben und Absatzformate (Name, Fließtext, Karten …) sind als Farbfelder bzw. Formate angelegt.
 
-## Variante im Apple-Stil (warm)
+## Variante im Apple-Stil
 
 Folgt Apples Designprinzipien (Klarheit, viel Weißraum, klare Hierarchie, Foto als Hauptdarsteller),
-wirkt aber bewusst warm: cremefarbener Hintergrund, große abgerundete Ecken, Pastell-Kacheln
-(„Bento“), Merkmale als Pillen, Kontaktfeld in Terrakotta.
+wirkt aber freundlich: große abgerundete Ecken, Kacheln („Bento“), Merkmale als Pillen.
+Farben bewusst schlicht: Blau, Gelb und Marineblau als Akzent, dazu neutrales Hellgrau.
 
 - Schrift: **Inter** (kostenlos, sehr nah an Apples SF Pro). Vorher installieren:
   [rsms.me/inter](https://rsms.me/inter/) oder Google Fonts. Ohne Inter: in InDesign
   *Schrift › Schriftart suchen/ersetzen* › „Inter“ durch „Helvetica Neue“ ersetzen.
 - Foto: den abgerundeten Rahmen links oben anklicken › *Datei › Platzieren…* – füllt sich automatisch.
-- Platzhalter in Terrakotta: `[€ / Monat]`, `[Alter]`, `[folgt]` (und in der Repo-Version Telefon/E-Mail).
+- Platzhalter in Blau: `[€ / Monat]`, `[Alter]`, `[folgt]` (und in der Repo-Version Telefon/E-Mail).
 
 ### Persönliche Daten
 
