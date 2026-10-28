@@ -569,20 +569,17 @@ Benennen, Sichern in „Dateien“ und Mail-Versand von Anfang an. Damit ist der
 der Rest kann schrittweise ergänzt werden.
 
 ### Bereits entschieden
-- Grenze pro PDF: **20 MB** (nach der Kompression gemessen).
+- Grenze pro PDF: **20 MB** (nach der Kompression gemessen), bleibt bei 20 MB.
 - Reicht ein PDF nicht, werden **beliebig viele Teile** erzeugt (2, 3, 4, …).
+- Mail-App: **Outlook** → „Per Mail senden“ öffnet standardmäßig das Teilen-Menü
+  (dort Outlook wählen); Apple Mail ist in der App umschaltbar.
+- Keine festen Empfänger, kein Standard-Betreff/-Text.
+- Liste **„Meine PDFs“** kommt direkt in die erste Version (ansehen, umbenennen,
+  erneut senden, in „Dateien“ sichern, löschen).
 
-### Offene Fragen an dich
+### Umsetzung
+Die erste Version liegt als Xcode-Projekt unter [`ios/`](../../ios/README.md).
+
+### Noch offen
 1. Nur für dich privat oder im App Store veröffentlichen?
-2. Reicht A4, oder werden weitere Formate (z. B. A5, US Letter) gebraucht?
-3. Sollen Fotos im Raster auch beschriftet werden können (z. B. Datum oder eigener Text)?
-4. Soll beim Raster 1×1 standardmäßig *ein* PDF mit allen Seiten entstehen oder *ein
-   PDF je Foto*?
-5. Bleibt es bei 20 MB pro Teil, oder lieber ca. 14 MB, damit jede Mail sicher bei
-   allen Anbietern durchgeht (siehe Hinweis in 2.5)?
-6. Welche Mail-App nutzt du (Apple Mail, Gmail, Outlook …)? Davon hängt ab, ob das
-   eingebaute Mail-Fenster oder das Teilen-Menü der Hauptweg wird.
-7. Gibt es feste Empfänger (z. B. immer dieselbe Adresse), die vorausgefüllt sein
-   sollen, oder einen Standard-Betreff / Standard-Text für die Mail?
-8. Soll die App eine eigene Liste „Meine PDFs“ führen, um frühere PDFs später
-   umzubenennen oder erneut zu senden (Phase 2)?
+2. Sollen Fotos im Raster beschriftet werden können (z. B. Datum oder eigener Text)?
