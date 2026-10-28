@@ -20,11 +20,11 @@ Frameworks, ohne Drittanbieter-Bibliotheken, ohne Server und komplett offline.
 | **Per Mail senden** | Mail-Fenster direkt in der App (`MFMailComposeViewController`) | ✅ einfach |
 | Weitere Wege (AirDrop, WhatsApp, Drucken …) | Teilen-Menü (`ShareLink`) | ✅ einfach |
 | **Eingebauter Kompressor** | ImageIO: Fotos verkleinern + JPEG-Qualität steuern | ✅ machbar |
-| **Max. 30 MB pro PDF, sonst nach der Kompression in 2 PDFs aufteilen** | Dateigröße messen, an Seitengrenzen aufteilen | ✅ machbar |
+| **Max. 20 MB pro PDF, sonst nach der Kompression in mehrere PDFs aufteilen** | Dateigröße messen, an Seitengrenzen aufteilen | ✅ machbar |
 
 Etwas Sorgfalt brauchen nur zwei Bereiche: der **Speicherverbrauch bei vielen Fotos**
 (z. B. 100+ Bilder in hoher Auflösung) und die **zuverlässige Einhaltung der
-30-MB-Grenze**. Für beides gibt es bewährte Lösungen (siehe Abschnitte 2.4, 4.5 und 7).
+20-MB-Grenze**. Für beides gibt es bewährte Lösungen (siehe Abschnitte 2.4, 4.5 und 7).
 
 **Wichtige Erkenntnis für das Design:** „Ein Foto pro A4-Seite“ ist technisch einfach
 ein Raster von **1×1**. Beide Wünsche (Einzelfoto als A4 und mehrere Fotos pro Seite)
@@ -63,12 +63,12 @@ Später denkbar: Hintergrundfarbe, Rahmenlinie um jedes Foto, Bildunterschrift
 - Live-Vorschau: Jede Änderung an Raster/Rand wird sofort in einer Seitenvorschau
   angezeigt; man kann durch die Seiten wischen. Anzeige „12 Fotos → 3 Seiten“.
 - Vor dem Export wird die geschätzte Größe angezeigt, z. B.
-  „ca. 18 MB · 1 PDF“ oder „ca. 47 MB · wird in 2 PDFs à ca. 24 MB aufgeteilt“.
+  „ca. 18 MB · 1 PDF“ oder „ca. 47 MB · wird in 3 PDFs à ca. 16 MB aufgeteilt“.
 - Die letzten Einstellungen werden gespeichert und beim nächsten Start verwendet.
 
 Benennen, Speichern und Mail sind in Abschnitt 2.5 beschrieben.
 
-### 2.4 Kompressor & automatische Aufteilung (max. 30 MB pro PDF)
+### 2.4 Kompressor & automatische Aufteilung (max. 20 MB pro PDF)
 
 Ein Kompressor ist **immer aktiv**. Die Reihenfolge ist fest: **erst komprimieren,
 dann prüfen, erst danach (falls nötig) aufteilen.**
@@ -76,11 +76,12 @@ dann prüfen, erst danach (falls nötig) aufteilen.**
 ```
  Fotos ──▶ 1. KOMPRIMIEREN ──▶ 2. PDF erzeugen ──▶ 3. Größe prüfen
                                                        │
-                              ≤ 30 MB ◀────────────────┤
-                                 │                     │ > 30 MB
+                              ≤ 20 MB ◀────────────────┤
+                                 │                     │ > 20 MB
                                  ▼                     ▼
-                              1 PDF            4. AUFTEILEN in 2 PDFs
-                                               (je ≤ 30 MB, an Seitengrenzen)
+                              1 PDF            4. AUFTEILEN in so viele PDFs
+                                                  wie nötig (je ≤ 20 MB,
+                                                  an Seitengrenzen)
 ```
 
 **1. Komprimieren** – zwei Hebel, die zusammen die Datenmenge drastisch verringern:
@@ -94,33 +95,35 @@ dann prüfen, erst danach (falls nötig) aufteilen.**
 **2. PDF erzeugen** – aus den bereits komprimierten Bildern.
 
 **3. Größe prüfen** – die echte Dateigröße des fertigen PDFs wird gemessen. Die Grenze
-gilt hart: **30 MB = 30.000.000 Byte** (dezimal, so wie iOS „Dateien“ und Mailprogramme
+gilt hart: **20 MB = 20.000.000 Byte** (dezimal, so wie iOS „Dateien“ und Mailprogramme
 zählen; dadurch bleibt man auch bei binärer Zählweise sicher darunter).
 
-**4. Aufteilen** – nur wenn das *komprimierte* PDF größer als 30 MB ist:
+**4. Aufteilen** – nur wenn das *komprimierte* PDF größer als 20 MB ist:
 - Aufgeteilt wird **immer an Seitengrenzen**; eine Seite wird nie zerschnitten, die
-  Seitenreihenfolge bleibt erhalten (Teil 1 = Seiten 1 bis k, Teil 2 = Rest).
-- Die Teile werden **möglichst gleich groß** gemacht (z. B. 2 × 24 MB statt 30 + 18 MB).
+  Seitenreihenfolge bleibt erhalten (Teil 1 = Seiten 1 bis k, Teil 2 = die nächsten usw.).
+- Es werden **so viele Teile wie nötig** erzeugt (2, 3, 4, …), aber nie mehr als
+  nötig. Beispiel: 47 MB → 3 Teile, 35 MB → 2 Teile.
+- Die Teile werden **möglichst gleich groß** gemacht (z. B. 3 × 16 MB statt
+  20 + 20 + 7 MB).
 - Dateinamen: der selbst vergebene Name plus Teilnummer, z. B.
-  `Urlaub Kroatien – Teil 1 von 2.pdf` und `Urlaub Kroatien – Teil 2 von 2.pdf` (siehe 2.5).
-- Jeder Teil wird nach dem Schreiben nochmals gemessen. Würde ein Teil die 30 MB doch
+  `Urlaub Kroatien – Teil 1 von 3.pdf` … `Urlaub Kroatien – Teil 3 von 3.pdf` (siehe 2.5).
+- Jeder Teil wird nach dem Schreiben nochmals gemessen. Würde ein Teil die 20 MB doch
   überschreiten, wird er erneut aufgeteilt; die Grenze gilt damit garantiert.
-- Bei sehr großen Mengen, bei denen auch 2 Teile nicht reichen (siehe Tabelle unten),
-  werden automatisch so viele Teile wie nötig erzeugt (3, 4, …), damit kein PDF über
-  30 MB liegt.
-- Sonderfall „eine einzelne Seite > 30 MB“: praktisch ausgeschlossen (eine 3×4-Seite in
+- Sonderfall „eine einzelne Seite > 20 MB“: praktisch ausgeschlossen (eine 3×4-Seite in
   Druckqualität hat ca. 5–8 MB). Falls doch, werden nur die Fotos dieser Seite stärker
   komprimiert.
 
 **Orientierungswerte** (Schätzung, abhängig vom Motiv; wird im Prototyp verifiziert):
 
-| Raster | Kompression | ca. Größe pro Seite | Seiten bis 30 MB | Fotos bis 30 MB |
+| Raster | Kompression | ca. Größe pro Seite | Seiten pro PDF (20 MB) | Fotos pro PDF (20 MB) |
 |---|---|---|---|---|
-| 1×1 (A4) | Standard | 0,8–1,5 MB | 20–35 | 20–35 |
-| 2×2 | Standard | 0,6–1,2 MB | 25–50 | 100–200 |
-| 2×2 | Stark | 0,3–0,6 MB | 50–100 | 200–400 |
-| 2×2 | Hoch (Druck) | 1,2–2,4 MB | 12–25 | 50–100 |
-| zum Vergleich: unkomprimiert | – | 3–6 MB pro Foto | – | nur ca. 6–10 |
+| 1×1 (A4) | Standard | 0,8–1,5 MB | 13–25 | 13–25 |
+| 2×2 | Standard | 0,6–1,2 MB | 16–33 | 65–130 |
+| 2×2 | Stark | 0,3–0,6 MB | 33–66 | 130–260 |
+| 2×2 | Hoch (Druck) | 1,2–2,4 MB | 8–16 | 33–66 |
+| zum Vergleich: unkomprimiert | – | 3–6 MB pro Foto | – | nur ca. 3–6 |
+
+Mehr Fotos sind kein Problem, es entstehen dann einfach entsprechend mehr Teile.
 
 ### 2.5 PDF benennen, in „Dateien“ speichern und per Mail senden
 
@@ -134,7 +137,7 @@ nutzen kann (z. B. erst in „Dateien“ sichern, dann noch per Mail schicken):
 │  │ Urlaub Kroatien        │ .pdf │
 │  └────────────────────────┘      │
 │                                  │
-│  ca. 47 MB → 2 PDFs à ca. 24 MB  │
+│  ca. 47 MB → 3 PDFs à ca. 16 MB  │
 │  Kompression: Standard  ▾        │
 │                                  │
 │  [   In „Dateien“ sichern    ]   │
@@ -151,7 +154,7 @@ nutzen kann (z. B. erst in „Dateien“ sichern, dann noch per Mail schicken):
   in Dateinamen verboten sind (`/ \ : * ? " < > |`), werden automatisch durch `-`
   ersetzt; ein leeres Feld fällt auf den Vorschlag zurück.
 - Wird das PDF aufgeteilt (2.4), bekommen die Teile denselben Namen plus Teilnummer:
-  `Urlaub Kroatien – Teil 1 von 2.pdf`, `Urlaub Kroatien – Teil 2 von 2.pdf`.
+  `Urlaub Kroatien – Teil 1 von 3.pdf`, `… – Teil 2 von 3.pdf`, `… – Teil 3 von 3.pdf`.
 - Der Name wird auch als Titel in die PDF-Metadaten geschrieben (wird z. B. in der
   Vorschau am Mac oder in Acrobat als Dokumenttitel angezeigt).
 
@@ -159,7 +162,7 @@ nutzen kann (z. B. erst in „Dateien“ sichern, dann noch per Mail schicken):
 - Tippen auf „In ‚Dateien‘ sichern“ öffnet die iOS-Ordnerauswahl. Man wählt den
   Speicherort selbst: iCloud Drive, „Auf meinem iPhone“ oder angebundene Dienste wie
   Google Drive, OneDrive oder Dropbox; neue Ordner lassen sich dort direkt anlegen.
-- Bei Aufteilung werden beide Teile in einem Schritt in denselben Ordner gesichert.
+- Bei Aufteilung werden alle Teile in einem Schritt in denselben Ordner gesichert.
 - Gibt es im Zielordner schon eine Datei mit demselben Namen, kümmert sich der
   System-Dialog darum (Ersetzen oder beide behalten); das wird im Prototyp geprüft.
 - Keine zusätzliche Berechtigung nötig.
@@ -176,15 +179,22 @@ nutzen kann (z. B. erst in „Dateien“ sichern, dann noch per Mail schicken):
   eingerichtet (wer z. B. nur die Gmail- oder Outlook-App nutzt), öffnet die App
   stattdessen automatisch das Teilen-Menü, in dem man die eigene Mail-App wählt;
   das PDF wird auch dort angehängt.
-- **Aufgeteilte PDFs und Mail-Größenlimits:** Zwei Teile à 24 MB ergeben zusammen ca.
-  48 MB, das lehnen die meisten Mail-Anbieter ab (Gmail 25 MB, Outlook 20 MB, viele
-  Firmen-Server 10–25 MB). Deshalb wird bei aufgeteilten PDFs angeboten:
-  - **„Jeden Teil als eigene Mail“** (Standard): Es öffnen sich nacheinander zwei
-    Mail-Fenster, Betreff „Urlaub Kroatien – Teil 1 von 2“ bzw. „Teil 2 von 2“;
-    der Empfänger aus der ersten Mail wird in die zweite übernommen.
+- **Aufgeteilte PDFs und Mail-Größenlimits:** Jeder Teil ist höchstens 20 MB groß,
+  alle Teile zusammen aber mehr; so große Mails lehnen die meisten Anbieter ab
+  (Gmail 25 MB, Outlook 20 MB, viele Firmen-Server 10–25 MB). Deshalb wird bei
+  aufgeteilten PDFs angeboten:
+  - **„Jeden Teil als eigene Mail“** (Standard): Es öffnen sich nacheinander so viele
+    Mail-Fenster wie Teile, Betreff „Urlaub Kroatien – Teil 1 von 3“, „Teil 2 von 3“
+    usw.; der Empfänger aus der ersten Mail wird in die folgenden übernommen.
   - **„Alle Teile in einer Mail“**: sinnvoll mit iCloud Mail Drop (Apple Mail bietet
     bei großen Anhängen an, sie über iCloud bis 5 GB zu versenden); ob Mail Drop auch
     im eingebauten Mail-Fenster angeboten wird, wird im Prototyp geprüft.
+- **Hinweis zur Mail-Größe:** Anhänge werden beim Mail-Versand technisch umkodiert
+  (Base64) und dadurch um etwa ein Drittel größer. Ein 20-MB-PDF ist unterwegs also
+  ca. 27 MB groß. Je nach Anbieter (v. a. Outlook mit 20 MB, Gmail mit 25 MB) kann eine
+  solche Mail trotzdem abgelehnt werden. Wenn die Teile garantiert per Mail durchgehen
+  sollen, wären ca. **14 MB** pro Teil die sichere Grenze. Die Grenze ist im Code eine
+  einzige Konstante und lässt sich jederzeit ändern.
 
 **4. Weitere** – öffnet das normale iOS-Teilen-Menü (AirDrop, WhatsApp, Nachrichten,
 Drucken, andere Apps).
@@ -234,7 +244,7 @@ FotoPDF/
 │   ├── GridLayout.swift            berechnet die Zellen-Rechtecke einer Seite
 │   ├── ImageCompressor.swift       verkleinert + JPEG-komprimiert jedes Foto
 │   ├── PDFComposer.swift           erzeugt das PDF Seite für Seite
-│   ├── PDFSplitter.swift           prüft die 30-MB-Grenze und teilt bei Bedarf auf
+│   ├── PDFSplitter.swift           prüft die 20-MB-Grenze und teilt bei Bedarf auf
 │   └── FileNaming.swift            bereinigt den eingegebenen Namen, Teil-Namen
 ├── ViewModel/ProjectViewModel.swift
 └── Views/
@@ -368,7 +378,7 @@ func compressedJPEG(from source: URL, drawSize: CGSize, compression: Compression
 Beim Zeichnen ins PDF wird das Bild aus den JPEG-Daten erzeugt
 (`CGImage(jpegDataProviderSource:…)`); Quartz bettet solche Bilder in der Regel
 unverändert als JPEG ins PDF ein, sodass die PDF-Größe ≈ Summe der JPEG-Größen ist.
-Das wird im Prototyp geprüft. Die 30-MB-Garantie hängt aber nicht davon ab, weil am
+Das wird im Prototyp geprüft. Die 20-MB-Garantie hängt aber nicht davon ab, weil am
 Ende immer die **echte Dateigröße** gemessen wird.
 
 **Aufteilen:** Da die Größe jedes komprimierten Fotos bekannt ist, kennt man auch die
@@ -376,8 +386,8 @@ ungefähre Größe jeder Seite. Daraus wird berechnet, wie viele Teile mindesten
 sind, und dann so aufgeteilt, dass die Teile möglichst gleich groß werden:
 
 ```swift
-let maxFileSize    = 30_000_000   // harte Obergrenze pro PDF (30 MB)
-let targetPartSize = 28_000_000   // Sicherheitsabstand für PDF-Verwaltungsdaten
+let maxFileSize    = 20_000_000   // harte Obergrenze pro PDF (20 MB)
+let targetPartSize = 18_500_000   // Sicherheitsabstand für PDF-Verwaltungsdaten
 
 /// Zusammenhängende Seitenbereiche, keiner größer als `cap` Byte.
 func greedyParts(_ pageSizes: [Int], cap: Int) -> [Range<Int>] {
@@ -395,7 +405,7 @@ func greedyParts(_ pageSizes: [Int], cap: Int) -> [Range<Int>] {
     return parts
 }
 
-/// So wenige Teile wie nötig (meist 2), dabei möglichst gleich groß.
+/// So wenige Teile wie nötig, dabei möglichst gleich groß.
 func balancedParts(_ pageSizes: [Int], limit: Int = targetPartSize) -> [Range<Int>] {
     let count = greedyParts(pageSizes, cap: limit).count
     var lo = pageSizes.max() ?? 0, hi = limit
@@ -408,7 +418,7 @@ func balancedParts(_ pageSizes: [Int], limit: Int = targetPartSize) -> [Range<In
 ```
 
 Ablauf im `PDFSplitter`:
-1. Summe aller Seitengrößen ≤ 28 MB → ein PDF schreiben.
+1. Summe aller Seitengrößen ≤ 18,5 MB → ein PDF schreiben.
 2. Sonst `balancedParts` → für jeden Bereich ein eigenes PDF schreiben.
 3. Jede geschriebene Datei messen; liegt eine über `maxFileSize`, wird nur dieser Teil
    erneut aufgeteilt.
@@ -495,7 +505,7 @@ struct MailView: UIViewControllerRepresentable {
 
 Ist `MailView.canSend` falsch (kein Konto in Apple Mail), zeigt die App stattdessen das
 Teilen-Menü mit denselben Dateien. Bei „Jeden Teil als eigene Mail“ öffnet `onFinish`
-nach dem Senden von Teil 1 automatisch das Fenster für Teil 2.
+nach dem Senden eines Teils automatisch das Fenster für den nächsten Teil.
 
 ## 5. Datenschutz
 
@@ -516,10 +526,10 @@ die App.
 | Risiko | Lösung |
 |---|---|
 | Speicher läuft voll bei vielen großen Fotos (ein 48-MP-Foto belegt dekodiert ~190 MB) | Fotos nie alle gleichzeitig laden; mit ImageIO (`CGImageSourceCreateThumbnailAtIndex`) direkt auf die benötigte Auflösung verkleinert laden; PDF seitenweise direkt in eine Datei schreiben (siehe Code) |
-| Große PDF-Dateien | Eingebauter Kompressor (2.4): Fotos auf Zielauflösung herunterrechnen + JPEG-Kompression; danach harte 30-MB-Grenze mit automatischer Aufteilung |
+| Große PDF-Dateien | Eingebauter Kompressor (2.4): Fotos auf Zielauflösung herunterrechnen + JPEG-Kompression; danach harte 20-MB-Grenze mit automatischer Aufteilung |
 | Geschätzte Größe weicht von echter ab | Schätzung nur für Vorschau und Aufteilungsplan; entscheidend ist die gemessene Dateigröße, zu große Teile werden nachträglich weiter aufgeteilt |
 | Empfänger bekommt mehrere Dateien | klare Namen „Teil 1 von 2“, alle Teile werden in einem Rutsch gesichert bzw. geteilt |
-| Mail wird wegen Größe abgelehnt | aufgeteilte PDFs standardmäßig als eine Mail pro Teil senden; optional Mail Drop |
+| Mail wird wegen Größe abgelehnt | aufgeteilte PDFs standardmäßig als eine Mail pro Teil senden; optional Mail Drop; bei Bedarf Grenze senken (ca. 14 MB ist für alle gängigen Anbieter sicher) |
 | Kein Konto in Apple Mail eingerichtet | automatisch auf das Teilen-Menü ausweichen (Gmail, Outlook usw.) |
 | Ungültige Zeichen im eingegebenen Namen | werden automatisch ersetzt, leerer Name fällt auf den Vorschlag zurück |
 | Fotos liegen nur in iCloud | Der Picker lädt sie nach; Fortschrittsanzeige einbauen |
@@ -533,7 +543,7 @@ Schätzung für eine Person mit iOS-Erfahrung:
 
 | Phase | Inhalt | Aufwand |
 |---|---|---|
-| **1 – MVP** | Fotoauswahl, Raster (Vorlagen + eigenes, Standard 2×2), Rand, Abstand, Einpassen/Füllen, Hoch/Quer, ein gemeinsames PDF, **Kompressor, 30-MB-Grenze mit automatischer Aufteilung, PDF selbst benennen, in „Dateien“ sichern, per Mail senden (inkl. eine Mail pro Teil)**, Teilen-Menü | ca. 10–13 Personentage |
+| **1 – MVP** | Fotoauswahl, Raster (Vorlagen + eigenes, Standard 2×2), Rand, Abstand, Einpassen/Füllen, Hoch/Quer, ein gemeinsames PDF, **Kompressor, 20-MB-Grenze mit automatischer Aufteilung in beliebig viele Teile, PDF selbst benennen, in „Dateien“ sichern, per Mail senden (inkl. eine Mail pro Teil)**, Teilen-Menü | ca. 10–13 Personentage |
 | **2 – Komfort** | Live-Vorschau mit PDFKit, Umsortieren per Drag & Drop, „ein PDF pro Foto“, Größenanzeige vor dem Export, Einstellungen merken, Auto-Drehen, Liste „Meine PDFs“ (umbenennen, erneut senden) | ca. 5–8 Personentage |
 | **3 – Feinschliff** | App-Icon, Dark Mode, iPad-Layout, Lokalisierung DE/EN, Barrierefreiheit, Tests, App-Store-Einreichung | ca. 4–6 Personentage |
 | Optional | Rahmen, Bildunterschriften, Seitenzahlen, weitere Papierformate | je 0,5–2 Tage |
@@ -554,9 +564,13 @@ Schätzung für eine Person mit iOS-Erfahrung:
 
 Umsetzen. Die Anforderungen passen sehr gut zu dem, was iOS von Haus aus kann; das
 technische Risiko ist gering. Empfohlener Einstieg ist das **MVP aus Phase 1** mit einem
-einzigen Editor-Bildschirm, 2×2 als Standard, dem Kompressor samt 30-MB-Grenze sowie
+einzigen Editor-Bildschirm, 2×2 als Standard, dem Kompressor samt 20-MB-Grenze sowie
 Benennen, Sichern in „Dateien“ und Mail-Versand von Anfang an. Damit ist der Hauptnutzen sofort da,
 der Rest kann schrittweise ergänzt werden.
+
+### Bereits entschieden
+- Grenze pro PDF: **20 MB** (nach der Kompression gemessen).
+- Reicht ein PDF nicht, werden **beliebig viele Teile** erzeugt (2, 3, 4, …).
 
 ### Offene Fragen an dich
 1. Nur für dich privat oder im App Store veröffentlichen?
@@ -564,14 +578,11 @@ der Rest kann schrittweise ergänzt werden.
 3. Sollen Fotos im Raster auch beschriftet werden können (z. B. Datum oder eigener Text)?
 4. Soll beim Raster 1×1 standardmäßig *ein* PDF mit allen Seiten entstehen oder *ein
    PDF je Foto*?
-5. Wofür sind die 30 MB gedacht? Falls die PDFs per Mail verschickt werden: Gmail
-   erlaubt nur 25 MB pro Mail, Outlook 20 MB. Soll die Grenze einstellbar sein
-   (z. B. 10 / 20 / 25 / 30 MB), mit 30 MB als Standard?
-6. Wenn selbst 2 Teile nicht reichen: automatisch 3, 4, … Teile (so wie geplant)
-   oder lieber stärker komprimieren, damit es bei 2 Teilen bleibt?
-7. Welche Mail-App nutzt du (Apple Mail, Gmail, Outlook …)? Davon hängt ab, ob das
+5. Bleibt es bei 20 MB pro Teil, oder lieber ca. 14 MB, damit jede Mail sicher bei
+   allen Anbietern durchgeht (siehe Hinweis in 2.5)?
+6. Welche Mail-App nutzt du (Apple Mail, Gmail, Outlook …)? Davon hängt ab, ob das
    eingebaute Mail-Fenster oder das Teilen-Menü der Hauptweg wird.
-8. Gibt es feste Empfänger (z. B. immer dieselbe Adresse), die vorausgefüllt sein
+7. Gibt es feste Empfänger (z. B. immer dieselbe Adresse), die vorausgefüllt sein
    sollen, oder einen Standard-Betreff / Standard-Text für die Mail?
-9. Soll die App eine eigene Liste „Meine PDFs“ führen, um frühere PDFs später
+8. Soll die App eine eigene Liste „Meine PDFs“ führen, um frühere PDFs später
    umzubenennen oder erneut zu senden (Phase 2)?
