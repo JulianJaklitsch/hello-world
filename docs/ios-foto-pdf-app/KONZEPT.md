@@ -16,10 +16,12 @@ Frameworks, ohne Drittanbieter-Bibliotheken, ohne Server und komplett offline.
 | Raster frei wählbar | Einstellungen für Spalten × Zeilen | ✅ einfach |
 | Vorschau vor dem Export | `PDFKit` (`PDFView`) | ✅ einfach |
 | PDF speichern / teilen / drucken | `ShareLink` / Teilen-Menü (Dateien, Mail, AirDrop, Drucken) | ✅ einfach |
+| **Eingebauter Kompressor** | ImageIO: Fotos verkleinern + JPEG-Qualität steuern | ✅ machbar |
+| **Max. 30 MB pro PDF, sonst nach der Kompression in 2 PDFs aufteilen** | Dateigröße messen, an Seitengrenzen aufteilen | ✅ machbar |
 
-Der einzige Bereich, der etwas Sorgfalt braucht, ist der **Speicherverbrauch bei vielen
-Fotos** (z. B. 100+ Bilder in hoher Auflösung). Dafür gibt es bewährte Lösungen (siehe
-Abschnitt 7).
+Etwas Sorgfalt brauchen nur zwei Bereiche: der **Speicherverbrauch bei vielen Fotos**
+(z. B. 100+ Bilder in hoher Auflösung) und die **zuverlässige Einhaltung der
+30-MB-Grenze**. Für beides gibt es bewährte Lösungen (siehe Abschnitte 2.4, 4.5 und 7).
 
 **Wichtige Erkenntnis für das Design:** „Ein Foto pro A4-Seite“ ist technisch einfach
 ein Raster von **1×1**. Beide Wünsche (Einzelfoto als A4 und mehrere Fotos pro Seite)
@@ -49,7 +51,7 @@ schlank und die Bedienung einheitlich.
 | Bildanpassung | **Einpassen** (ganzes Foto sichtbar, ggf. Leerraum) / **Füllen** (Zelle voll, Foto wird beschnitten) | Einpassen |
 | Fotos automatisch drehen | Querformat-Fotos in Hochformat-Zellen drehen, damit sie größer erscheinen | aus |
 | Ausgabe | Alle Fotos in **ein** PDF / **ein PDF pro Foto** (nur bei 1×1 sinnvoll) | ein PDF |
-| Qualität | Klein (150 dpi) / Standard (220 dpi) / Druck (300 dpi) | Standard |
+| **Kompression** | Stark (150 dpi, JPEG 60 %) / Standard (220 dpi, JPEG 75 %) / Hoch für Druck (300 dpi, JPEG 85 %), siehe 2.4 | Standard |
 
 Später denkbar: Hintergrundfarbe, Rahmenlinie um jedes Foto, Bildunterschrift
 (Datum oder Dateiname), Seitenzahlen, Kopfzeile/Titel.
@@ -60,7 +62,63 @@ Später denkbar: Hintergrundfarbe, Rahmenlinie um jedes Foto, Bildunterschrift
 - Export über das iOS-Teilen-Menü: In „Dateien“ sichern, per Mail/Messenger senden,
   AirDrop, direkt drucken.
 - Dateiname vorschlagen (z. B. `Fotos_2026-10-28.pdf`), editierbar.
+- Vor dem Export wird die geschätzte Größe angezeigt, z. B.
+  „ca. 18 MB · 1 PDF“ oder „ca. 47 MB · wird in 2 PDFs à ca. 24 MB aufgeteilt“.
+- Bei Aufteilung werden alle Teile gemeinsam geteilt bzw. gespeichert.
 - Die letzten Einstellungen werden gespeichert und beim nächsten Start verwendet.
+
+### 2.4 Kompressor & automatische Aufteilung (max. 30 MB pro PDF)
+
+Ein Kompressor ist **immer aktiv**. Die Reihenfolge ist fest: **erst komprimieren,
+dann prüfen, erst danach (falls nötig) aufteilen.**
+
+```
+ Fotos ──▶ 1. KOMPRIMIEREN ──▶ 2. PDF erzeugen ──▶ 3. Größe prüfen
+                                                       │
+                              ≤ 30 MB ◀────────────────┤
+                                 │                     │ > 30 MB
+                                 ▼                     ▼
+                              1 PDF            4. AUFTEILEN in 2 PDFs
+                                               (je ≤ 30 MB, an Seitengrenzen)
+```
+
+**1. Komprimieren** – zwei Hebel, die zusammen die Datenmenge drastisch verringern:
+- **Verkleinern auf die tatsächlich benötigte Auflösung.** Ein iPhone-Foto hat 12–48
+  Megapixel; eine Zelle im 2×2-Raster braucht bei 220 dpi nur rund 1 Megapixel
+  (ca. 800 × 1180 Pixel). Alles darüber ist im PDF unsichtbar, kostet aber Speicher.
+  Die Zielauflösung wird pro Foto aus Zellgröße, Raster und Kompressionsstufe berechnet.
+- **JPEG-Kompression** mit einstellbarer Qualität (60 / 75 / 85 %). HEIC-Fotos werden
+  dabei in JPEG umgewandelt (PDF kann HEIC nicht direkt einbetten).
+
+**2. PDF erzeugen** – aus den bereits komprimierten Bildern.
+
+**3. Größe prüfen** – die echte Dateigröße des fertigen PDFs wird gemessen. Die Grenze
+gilt hart: **30 MB = 30.000.000 Byte** (dezimal, so wie iOS „Dateien“ und Mailprogramme
+zählen; dadurch bleibt man auch bei binärer Zählweise sicher darunter).
+
+**4. Aufteilen** – nur wenn das *komprimierte* PDF größer als 30 MB ist:
+- Aufgeteilt wird **immer an Seitengrenzen**; eine Seite wird nie zerschnitten, die
+  Seitenreihenfolge bleibt erhalten (Teil 1 = Seiten 1 bis k, Teil 2 = Rest).
+- Die Teile werden **möglichst gleich groß** gemacht (z. B. 2 × 24 MB statt 30 + 18 MB).
+- Dateinamen: `Fotos_2026-10-28_Teil1von2.pdf`, `Fotos_2026-10-28_Teil2von2.pdf`.
+- Jeder Teil wird nach dem Schreiben nochmals gemessen. Würde ein Teil die 30 MB doch
+  überschreiten, wird er erneut aufgeteilt; die Grenze gilt damit garantiert.
+- Bei sehr großen Mengen, bei denen auch 2 Teile nicht reichen (siehe Tabelle unten),
+  werden automatisch so viele Teile wie nötig erzeugt (3, 4, …), damit kein PDF über
+  30 MB liegt.
+- Sonderfall „eine einzelne Seite > 30 MB“: praktisch ausgeschlossen (eine 3×4-Seite in
+  Druckqualität hat ca. 5–8 MB). Falls doch, werden nur die Fotos dieser Seite stärker
+  komprimiert.
+
+**Orientierungswerte** (Schätzung, abhängig vom Motiv; wird im Prototyp verifiziert):
+
+| Raster | Kompression | ca. Größe pro Seite | Seiten bis 30 MB | Fotos bis 30 MB |
+|---|---|---|---|---|
+| 1×1 (A4) | Standard | 0,8–1,5 MB | 20–35 | 20–35 |
+| 2×2 | Standard | 0,6–1,2 MB | 25–50 | 100–200 |
+| 2×2 | Stark | 0,3–0,6 MB | 50–100 | 200–400 |
+| 2×2 | Hoch (Druck) | 1,2–2,4 MB | 12–25 | 50–100 |
+| zum Vergleich: unkomprimiert | – | 3–6 MB pro Foto | – | nur ca. 6–10 |
 
 ## 3. Bedienablauf (Screens)
 
@@ -69,7 +127,7 @@ Später denkbar: Hintergrundfarbe, Rahmenlinie um jedes Foto, Bildunterschrift
 │ 1. Start         │   │ 2. Auswahl       │   │ 3. Layout        │   │ 4. Export        │
 │                  │   │                  │   │                  │   │                  │
 │  [ Fotos         │──▶│  ▢ ▢ ▢ ▢         │──▶│  ┌────────────┐  │──▶│  Dateiname       │
-│    auswählen ]   │   │  ▢ ▢ ▢ ▢         │   │  │ ▢ ▢        │  │   │  Qualität        │
+│    auswählen ]   │   │  ▢ ▢ ▢ ▢         │   │  │ ▢ ▢        │  │   │  Kompression     │
 │                  │   │  (sortieren,     │   │  │ ▢ ▢        │  │   │                  │
 │  Zuletzt:        │   │   entfernen, +)  │   │  └────────────┘  │   │  [ Teilen /      │
 │  Raster 2×2      │   │                  │   │  Raster: 1×1 2×2 │   │    Sichern ]     │
@@ -104,7 +162,9 @@ FotoPDF/
 ├── Services/
 │   ├── PhotoLoader.swift           lädt & verkleinert Fotos speicherschonend (ImageIO)
 │   ├── GridLayout.swift            berechnet die Zellen-Rechtecke einer Seite
-│   └── PDFComposer.swift           erzeugt das PDF Seite für Seite
+│   ├── ImageCompressor.swift       verkleinert + JPEG-komprimiert jedes Foto
+│   ├── PDFComposer.swift           erzeugt das PDF Seite für Seite
+│   └── PDFSplitter.swift           prüft die 30-MB-Grenze und teilt bei Bedarf auf
 ├── ViewModel/ProjectViewModel.swift
 └── Views/
     ├── StartView.swift
@@ -196,6 +256,89 @@ func writePDF(photoCount: Int,
 }
 ```
 
+### 4.5 Kompressor & Aufteilung (Skizze)
+
+**Komprimieren:** Jedes Foto wird mit ImageIO direkt in der Zielauflösung geladen
+(ohne das volle 48-MP-Bild in den Speicher zu holen) und als JPEG kodiert. Die
+JPEG-Daten landen in einem temporären Ordner, nicht im Arbeitsspeicher.
+
+```swift
+import ImageIO
+import UniformTypeIdentifiers
+
+enum Compression {
+    case strong, standard, print
+    var dpi: CGFloat { switch self { case .strong: 150; case .standard: 220; case .print: 300 } }
+    var jpegQuality: CGFloat { switch self { case .strong: 0.60; case .standard: 0.75; case .print: 0.85 } }
+}
+
+/// `drawSize` = Größe, in der das Foto auf der Seite gezeichnet wird (in pt, aus `imageRect`).
+func compressedJPEG(from source: URL, drawSize: CGSize, compression: Compression) -> Data? {
+    let maxPixels = max(drawSize.width, drawSize.height) / 72 * compression.dpi
+    guard let src = CGImageSourceCreateWithURL(source as CFURL, nil),
+          let image = CGImageSourceCreateThumbnailAtIndex(src, 0, [
+              kCGImageSourceCreateThumbnailFromImageAlways: true,
+              kCGImageSourceCreateThumbnailWithTransform: true,   // EXIF-Drehung übernehmen
+              kCGImageSourceThumbnailMaxPixelSize: maxPixels
+          ] as CFDictionary) else { return nil }
+
+    let output = NSMutableData()
+    guard let dest = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil)
+    else { return nil }
+    CGImageDestinationAddImage(dest, image,
+        [kCGImageDestinationLossyCompressionQuality: compression.jpegQuality] as CFDictionary)
+    return CGImageDestinationFinalize(dest) ? output as Data : nil
+}
+```
+
+Beim Zeichnen ins PDF wird das Bild aus den JPEG-Daten erzeugt
+(`CGImage(jpegDataProviderSource:…)`); Quartz bettet solche Bilder in der Regel
+unverändert als JPEG ins PDF ein, sodass die PDF-Größe ≈ Summe der JPEG-Größen ist.
+Das wird im Prototyp geprüft. Die 30-MB-Garantie hängt aber nicht davon ab, weil am
+Ende immer die **echte Dateigröße** gemessen wird.
+
+**Aufteilen:** Da die Größe jedes komprimierten Fotos bekannt ist, kennt man auch die
+ungefähre Größe jeder Seite. Daraus wird berechnet, wie viele Teile mindestens nötig
+sind, und dann so aufgeteilt, dass die Teile möglichst gleich groß werden:
+
+```swift
+let maxFileSize    = 30_000_000   // harte Obergrenze pro PDF (30 MB)
+let targetPartSize = 28_000_000   // Sicherheitsabstand für PDF-Verwaltungsdaten
+
+/// Zusammenhängende Seitenbereiche, keiner größer als `cap` Byte.
+func greedyParts(_ pageSizes: [Int], cap: Int) -> [Range<Int>] {
+    var parts: [Range<Int>] = []
+    var start = 0, sum = 0
+    for (i, size) in pageSizes.enumerated() {
+        if sum + size > cap && i > start {
+            parts.append(start..<i)
+            start = i
+            sum = 0
+        }
+        sum += size
+    }
+    if start < pageSizes.count { parts.append(start..<pageSizes.count) }
+    return parts
+}
+
+/// So wenige Teile wie nötig (meist 2), dabei möglichst gleich groß.
+func balancedParts(_ pageSizes: [Int], limit: Int = targetPartSize) -> [Range<Int>] {
+    let count = greedyParts(pageSizes, cap: limit).count
+    var lo = pageSizes.max() ?? 0, hi = limit
+    while lo < hi {   // kleinste Obergrenze suchen, die mit `count` Teilen auskommt
+        let mid = (lo + hi) / 2
+        if greedyParts(pageSizes, cap: mid).count <= count { hi = mid } else { lo = mid + 1 }
+    }
+    return greedyParts(pageSizes, cap: lo)
+}
+```
+
+Ablauf im `PDFSplitter`:
+1. Summe aller Seitengrößen ≤ 28 MB → ein PDF schreiben.
+2. Sonst `balancedParts` → für jeden Bereich ein eigenes PDF schreiben.
+3. Jede geschriebene Datei messen; liegt eine über `maxFileSize`, wird nur dieser Teil
+   erneut aufgeteilt.
+
 ## 5. Datenschutz
 
 - Alles passiert lokal auf dem Gerät, keine Daten verlassen das iPhone (außer der
@@ -215,7 +358,9 @@ die App.
 | Risiko | Lösung |
 |---|---|
 | Speicher läuft voll bei vielen großen Fotos (ein 48-MP-Foto belegt dekodiert ~190 MB) | Fotos nie alle gleichzeitig laden; mit ImageIO (`CGImageSourceCreateThumbnailAtIndex`) direkt auf die benötigte Auflösung verkleinert laden; PDF seitenweise direkt in eine Datei schreiben (siehe Code) |
-| Große PDF-Dateien | Fotos auf Zielauflösung herunterrechnen (bei 2×2 und 220 dpi reichen ca. 800 × 1180 px pro Foto); Qualitätsstufe wählbar |
+| Große PDF-Dateien | Eingebauter Kompressor (2.4): Fotos auf Zielauflösung herunterrechnen + JPEG-Kompression; danach harte 30-MB-Grenze mit automatischer Aufteilung |
+| Geschätzte Größe weicht von echter ab | Schätzung nur für Vorschau und Aufteilungsplan; entscheidend ist die gemessene Dateigröße, zu große Teile werden nachträglich weiter aufgeteilt |
+| Empfänger bekommt mehrere Dateien | klare Namen „Teil 1 von 2“, alle Teile werden in einem Rutsch geteilt |
 | Fotos liegen nur in iCloud | Der Picker lädt sie nach; Fortschrittsanzeige einbauen |
 | Falsche Drehung (EXIF-Ausrichtung) | ImageIO-Option `kCGImageSourceCreateThumbnailWithTransform` berücksichtigt sie automatisch |
 | HEIC-, Live- und RAW-Fotos | HEIC/Live: problemlos (Standbild wird verwendet); RAW: als JPEG-Vorschau laden |
@@ -227,12 +372,12 @@ Schätzung für eine Person mit iOS-Erfahrung:
 
 | Phase | Inhalt | Aufwand |
 |---|---|---|
-| **1 – MVP** | Fotoauswahl, Raster (Vorlagen + eigenes, Standard 2×2), Rand, Abstand, Einpassen/Füllen, Hoch/Quer, ein gemeinsames PDF, Teilen-Menü | ca. 5–8 Personentage |
-| **2 – Komfort** | Live-Vorschau mit PDFKit, Umsortieren per Drag & Drop, „ein PDF pro Foto“, Qualitätsstufen, Einstellungen merken, Auto-Drehen | ca. 4–6 Personentage |
+| **1 – MVP** | Fotoauswahl, Raster (Vorlagen + eigenes, Standard 2×2), Rand, Abstand, Einpassen/Füllen, Hoch/Quer, ein gemeinsames PDF, Teilen-Menü, **Kompressor, 30-MB-Grenze mit automatischer Aufteilung** | ca. 8–11 Personentage |
+| **2 – Komfort** | Live-Vorschau mit PDFKit, Umsortieren per Drag & Drop, „ein PDF pro Foto“, Größenanzeige vor dem Export, Einstellungen merken, Auto-Drehen | ca. 4–6 Personentage |
 | **3 – Feinschliff** | App-Icon, Dark Mode, iPad-Layout, Lokalisierung DE/EN, Barrierefreiheit, Tests, App-Store-Einreichung | ca. 4–6 Personentage |
 | Optional | Rahmen, Bildunterschriften, Seitenzahlen, weitere Papierformate | je 0,5–2 Tage |
 
-**Gesamt bis zur App-Store-reifen Version: etwa 3–4 Wochen.**
+**Gesamt bis zur App-Store-reifen Version: etwa 3,5–4,5 Wochen.**
 
 ## 9. Was du zum Starten brauchst
 
@@ -248,7 +393,8 @@ Schätzung für eine Person mit iOS-Erfahrung:
 
 Umsetzen. Die Anforderungen passen sehr gut zu dem, was iOS von Haus aus kann; das
 technische Risiko ist gering. Empfohlener Einstieg ist das **MVP aus Phase 1** mit einem
-einzigen Editor-Bildschirm und 2×2 als Standard. Damit ist der Hauptnutzen sofort da,
+einzigen Editor-Bildschirm, 2×2 als Standard und dem Kompressor samt 30-MB-Grenze von
+Anfang an. Damit ist der Hauptnutzen sofort da,
 der Rest kann schrittweise ergänzt werden.
 
 ### Offene Fragen an dich
@@ -257,3 +403,8 @@ der Rest kann schrittweise ergänzt werden.
 3. Sollen Fotos im Raster auch beschriftet werden können (z. B. Datum oder eigener Text)?
 4. Soll beim Raster 1×1 standardmäßig *ein* PDF mit allen Seiten entstehen oder *ein
    PDF je Foto*?
+5. Wofür sind die 30 MB gedacht? Falls die PDFs per Mail verschickt werden: Gmail
+   erlaubt nur 25 MB pro Mail, Outlook 20 MB. Soll die Grenze einstellbar sein
+   (z. B. 10 / 20 / 25 / 30 MB), mit 30 MB als Standard?
+6. Wenn selbst 2 Teile nicht reichen: automatisch 3, 4, … Teile (so wie geplant)
+   oder lieber stärker komprimieren, damit es bei 2 Teilen bleibt?
