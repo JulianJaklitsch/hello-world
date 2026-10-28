@@ -15,7 +15,10 @@ Frameworks, ohne Drittanbieter-Bibliotheken, ohne Server und komplett offline.
 | Mehrere Fotos pro Seite im Raster (Standard 2×2) | eigene Layout-Berechnung (wenige Zeilen Code) | ✅ einfach |
 | Raster frei wählbar | Einstellungen für Spalten × Zeilen | ✅ einfach |
 | Vorschau vor dem Export | `PDFKit` (`PDFView`) | ✅ einfach |
-| PDF speichern / teilen / drucken | `ShareLink` / Teilen-Menü (Dateien, Mail, AirDrop, Drucken) | ✅ einfach |
+| **PDF in der App selbst benennen** | Namensfeld vor dem Export | ✅ einfach |
+| **In „Dateien“ speichern** (iCloud Drive, „Auf meinem iPhone“, Google Drive …) | System-Ordnerauswahl (`UIDocumentPickerViewController`) | ✅ einfach |
+| **Per Mail senden** | Mail-Fenster direkt in der App (`MFMailComposeViewController`) | ✅ einfach |
+| Weitere Wege (AirDrop, WhatsApp, Drucken …) | Teilen-Menü (`ShareLink`) | ✅ einfach |
 | **Eingebauter Kompressor** | ImageIO: Fotos verkleinern + JPEG-Qualität steuern | ✅ machbar |
 | **Max. 30 MB pro PDF, sonst nach der Kompression in 2 PDFs aufteilen** | Dateigröße messen, an Seitengrenzen aufteilen | ✅ machbar |
 
@@ -56,16 +59,14 @@ schlank und die Bedienung einheitlich.
 Später denkbar: Hintergrundfarbe, Rahmenlinie um jedes Foto, Bildunterschrift
 (Datum oder Dateiname), Seitenzahlen, Kopfzeile/Titel.
 
-### 2.3 Vorschau & Export
+### 2.3 Vorschau
 - Live-Vorschau: Jede Änderung an Raster/Rand wird sofort in einer Seitenvorschau
   angezeigt; man kann durch die Seiten wischen. Anzeige „12 Fotos → 3 Seiten“.
-- Export über das iOS-Teilen-Menü: In „Dateien“ sichern, per Mail/Messenger senden,
-  AirDrop, direkt drucken.
-- Dateiname vorschlagen (z. B. `Fotos_2026-10-28.pdf`), editierbar.
 - Vor dem Export wird die geschätzte Größe angezeigt, z. B.
   „ca. 18 MB · 1 PDF“ oder „ca. 47 MB · wird in 2 PDFs à ca. 24 MB aufgeteilt“.
-- Bei Aufteilung werden alle Teile gemeinsam geteilt bzw. gespeichert.
 - Die letzten Einstellungen werden gespeichert und beim nächsten Start verwendet.
+
+Benennen, Speichern und Mail sind in Abschnitt 2.5 beschrieben.
 
 ### 2.4 Kompressor & automatische Aufteilung (max. 30 MB pro PDF)
 
@@ -100,7 +101,8 @@ zählen; dadurch bleibt man auch bei binärer Zählweise sicher darunter).
 - Aufgeteilt wird **immer an Seitengrenzen**; eine Seite wird nie zerschnitten, die
   Seitenreihenfolge bleibt erhalten (Teil 1 = Seiten 1 bis k, Teil 2 = Rest).
 - Die Teile werden **möglichst gleich groß** gemacht (z. B. 2 × 24 MB statt 30 + 18 MB).
-- Dateinamen: `Fotos_2026-10-28_Teil1von2.pdf`, `Fotos_2026-10-28_Teil2von2.pdf`.
+- Dateinamen: der selbst vergebene Name plus Teilnummer, z. B.
+  `Urlaub Kroatien – Teil 1 von 2.pdf` und `Urlaub Kroatien – Teil 2 von 2.pdf` (siehe 2.5).
 - Jeder Teil wird nach dem Schreiben nochmals gemessen. Würde ein Teil die 30 MB doch
   überschreiten, wird er erneut aufgeteilt; die Grenze gilt damit garantiert.
 - Bei sehr großen Mengen, bei denen auch 2 Teile nicht reichen (siehe Tabelle unten),
@@ -120,26 +122,93 @@ zählen; dadurch bleibt man auch bei binärer Zählweise sicher darunter).
 | 2×2 | Hoch (Druck) | 1,2–2,4 MB | 12–25 | 50–100 |
 | zum Vergleich: unkomprimiert | – | 3–6 MB pro Foto | – | nur ca. 6–10 |
 
+### 2.5 PDF benennen, in „Dateien“ speichern und per Mail senden
+
+Der Export-Bildschirm hat drei klare Aktionen, die man einzeln **oder nacheinander**
+nutzen kann (z. B. erst in „Dateien“ sichern, dann noch per Mail schicken):
+
+```
+┌──────────────────────────────────┐
+│  Name des PDFs                   │
+│  ┌────────────────────────┐      │
+│  │ Urlaub Kroatien        │ .pdf │
+│  └────────────────────────┘      │
+│                                  │
+│  ca. 47 MB → 2 PDFs à ca. 24 MB  │
+│  Kompression: Standard  ▾        │
+│                                  │
+│  [   In „Dateien“ sichern    ]   │
+│  [   Per Mail senden         ]   │
+│  [   Weitere … (Teilen)      ]   │
+└──────────────────────────────────┘
+```
+
+**1. PDF selbst benennen**
+- Namensfeld ist vorausgefüllt mit einem Vorschlag (`Fotos 2026-10-28`) und beim
+  Öffnen des Bildschirms schon markiert, sodass man direkt lostippen kann.
+- Die Endung `.pdf` hängt die App automatisch an (grau daneben angezeigt).
+- Umlaute, Leerzeichen und Sonderzeichen wie `&` oder `–` sind erlaubt. Zeichen, die
+  in Dateinamen verboten sind (`/ \ : * ? " < > |`), werden automatisch durch `-`
+  ersetzt; ein leeres Feld fällt auf den Vorschlag zurück.
+- Wird das PDF aufgeteilt (2.4), bekommen die Teile denselben Namen plus Teilnummer:
+  `Urlaub Kroatien – Teil 1 von 2.pdf`, `Urlaub Kroatien – Teil 2 von 2.pdf`.
+- Der Name wird auch als Titel in die PDF-Metadaten geschrieben (wird z. B. in der
+  Vorschau am Mac oder in Acrobat als Dokumenttitel angezeigt).
+
+**2. In „Dateien“ speichern**
+- Tippen auf „In ‚Dateien‘ sichern“ öffnet die iOS-Ordnerauswahl. Man wählt den
+  Speicherort selbst: iCloud Drive, „Auf meinem iPhone“ oder angebundene Dienste wie
+  Google Drive, OneDrive oder Dropbox; neue Ordner lassen sich dort direkt anlegen.
+- Bei Aufteilung werden beide Teile in einem Schritt in denselben Ordner gesichert.
+- Gibt es im Zielordner schon eine Datei mit demselben Namen, kümmert sich der
+  System-Dialog darum (Ersetzen oder beide behalten); das wird im Prototyp geprüft.
+- Keine zusätzliche Berechtigung nötig.
+- Optional (Phase 2): Die App legt zusätzlich eine Kopie in ihrem eigenen Ordner ab,
+  der in der „Dateien“-App unter „Auf meinem iPhone → FotoPDF“ erscheint. So gibt es
+  eine Liste „Meine PDFs“, in der man frühere PDFs umbenennen, erneut senden oder
+  löschen kann.
+
+**3. Per Mail senden**
+- Tippen auf „Per Mail senden“ öffnet ein Mail-Fenster **direkt in der App**:
+  das PDF ist schon angehängt, der Betreff ist mit dem PDF-Namen vorausgefüllt,
+  man trägt nur noch den Empfänger ein und sendet. Danach ist man wieder in der App.
+- Das eingebaute Mail-Fenster nutzt die Apple-Mail-App. Ist dort kein Konto
+  eingerichtet (wer z. B. nur die Gmail- oder Outlook-App nutzt), öffnet die App
+  stattdessen automatisch das Teilen-Menü, in dem man die eigene Mail-App wählt;
+  das PDF wird auch dort angehängt.
+- **Aufgeteilte PDFs und Mail-Größenlimits:** Zwei Teile à 24 MB ergeben zusammen ca.
+  48 MB, das lehnen die meisten Mail-Anbieter ab (Gmail 25 MB, Outlook 20 MB, viele
+  Firmen-Server 10–25 MB). Deshalb wird bei aufgeteilten PDFs angeboten:
+  - **„Jeden Teil als eigene Mail“** (Standard): Es öffnen sich nacheinander zwei
+    Mail-Fenster, Betreff „Urlaub Kroatien – Teil 1 von 2“ bzw. „Teil 2 von 2“;
+    der Empfänger aus der ersten Mail wird in die zweite übernommen.
+  - **„Alle Teile in einer Mail“**: sinnvoll mit iCloud Mail Drop (Apple Mail bietet
+    bei großen Anhängen an, sie über iCloud bis 5 GB zu versenden); ob Mail Drop auch
+    im eingebauten Mail-Fenster angeboten wird, wird im Prototyp geprüft.
+
+**4. Weitere** – öffnet das normale iOS-Teilen-Menü (AirDrop, WhatsApp, Nachrichten,
+Drucken, andere Apps).
+
 ## 3. Bedienablauf (Screens)
 
 ```
 ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
 │ 1. Start         │   │ 2. Auswahl       │   │ 3. Layout        │   │ 4. Export        │
 │                  │   │                  │   │                  │   │                  │
-│  [ Fotos         │──▶│  ▢ ▢ ▢ ▢         │──▶│  ┌────────────┐  │──▶│  Dateiname       │
+│  [ Fotos         │──▶│  ▢ ▢ ▢ ▢         │──▶│  ┌────────────┐  │──▶│  Name: [Urlaub]  │
 │    auswählen ]   │   │  ▢ ▢ ▢ ▢         │   │  │ ▢ ▢        │  │   │  Kompression     │
 │                  │   │  (sortieren,     │   │  │ ▢ ▢        │  │   │                  │
-│  Zuletzt:        │   │   entfernen, +)  │   │  └────────────┘  │   │  [ Teilen /      │
-│  Raster 2×2      │   │                  │   │  Raster: 1×1 2×2 │   │    Sichern ]     │
-│  Rand 10 mm      │   │  12 Fotos        │   │  Rand ─●──       │   │                  │
+│  Zuletzt:        │   │   entfernen, +)  │   │  └────────────┘  │   │  [In Dateien]    │
+│  Raster 2×2      │   │                  │   │  Raster: 1×1 2×2 │   │  [Per Mail]      │
+│  Rand 10 mm      │   │  12 Fotos        │   │  Rand ─●──       │   │  [Weitere …]     │
 └──────────────────┘   └──────────────────┘   │  3 Seiten        │   └──────────────────┘
                                               └──────────────────┘
 ```
 
 In der Praxis lassen sich Schritt 2 und 3 auf einem Bildschirm zusammenfassen
 (oben Vorschau, unten Einstellungen, Fotoleiste zum Sortieren), sodass der typische
-Fall „Fotos auswählen → Teilen“ nur **zwei Taps plus Auswahl** braucht, weil 2×2 schon
-voreingestellt ist.
+Fall „Fotos auswählen → Namen tippen → In Dateien sichern / Per Mail senden“ mit sehr
+wenigen Taps auskommt, weil 2×2 schon voreingestellt ist.
 
 ## 4. Technisches Konzept
 
@@ -148,7 +217,8 @@ voreingestellt ist.
 - **Mindestversion:** iOS 17 (wegen geordneter Mehrfachauswahl im `PhotosPicker`
   und moderner SwiftUI-APIs; deckt praktisch alle aktiven iPhones ab)
 - **Geräte:** iPhone, iPad läuft automatisch mit
-- **Frameworks:** SwiftUI, PhotosUI, UIKit (`UIGraphicsPDFRenderer`), PDFKit, ImageIO
+- **Frameworks:** SwiftUI, PhotosUI, UIKit (`UIGraphicsPDFRenderer`,
+  `UIDocumentPickerViewController`), PDFKit, ImageIO, MessageUI (Mail)
 - **Keine** Drittbibliotheken, **kein** Backend, **keine** Netzwerkverbindung
 
 ### 4.2 Architektur (MVVM, überschaubar)
@@ -164,13 +234,17 @@ FotoPDF/
 │   ├── GridLayout.swift            berechnet die Zellen-Rechtecke einer Seite
 │   ├── ImageCompressor.swift       verkleinert + JPEG-komprimiert jedes Foto
 │   ├── PDFComposer.swift           erzeugt das PDF Seite für Seite
-│   └── PDFSplitter.swift           prüft die 30-MB-Grenze und teilt bei Bedarf auf
+│   ├── PDFSplitter.swift           prüft die 30-MB-Grenze und teilt bei Bedarf auf
+│   └── FileNaming.swift            bereinigt den eingegebenen Namen, Teil-Namen
 ├── ViewModel/ProjectViewModel.swift
 └── Views/
     ├── StartView.swift
     ├── EditorView.swift            Fotoleiste + Vorschau + Einstellungen
     ├── LayoutControls.swift
-    └── PDFPreview.swift            PDFKit-Vorschau
+    ├── PDFPreview.swift            PDFKit-Vorschau
+    ├── ExportView.swift            Namensfeld, Größe, Sichern / Mail / Weitere
+    ├── SaveToFilesView.swift       Ordnerauswahl für „Dateien“
+    └── MailView.swift              Mail-Fenster mit PDF-Anhang
 ```
 
 ### 4.3 Maße & Layout-Berechnung
@@ -339,6 +413,90 @@ Ablauf im `PDFSplitter`:
 3. Jede geschriebene Datei messen; liegt eine über `maxFileSize`, wird nur dieser Teil
    erneut aufgeteilt.
 
+### 4.6 Benennen, Speichern, Mail (Skizze)
+
+**Dateiname:** Die PDFs werden im temporären Ordner gleich unter dem gewünschten Namen
+geschrieben. So tragen sie diesen Namen automatisch in „Dateien“, im Mail-Anhang und im
+Teilen-Menü.
+
+```swift
+/// Macht aus der Eingabe einen gültigen Dateinamen (ohne Endung).
+func sanitizedFileName(_ input: String, fallback: String) -> String {
+    let forbidden = CharacterSet(charactersIn: "/\\:*?\"<>|").union(.controlCharacters)
+    var name = input.components(separatedBy: forbidden).joined(separator: "-")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    if name.lowercased().hasSuffix(".pdf") { name = String(name.dropLast(4)) }
+    while name.hasPrefix(".") { name.removeFirst() }   // keine versteckten Dateien
+    name = String(name.prefix(100))
+    return name.isEmpty ? fallback : name
+}
+
+/// "Urlaub.pdf" bzw. "Urlaub – Teil 1 von 2.pdf", "Urlaub – Teil 2 von 2.pdf"
+func partFileNames(base: String, partCount: Int) -> [String] {
+    guard partCount > 1 else { return ["\(base).pdf"] }
+    return (1...partCount).map { "\(base) – Teil \($0) von \(partCount).pdf" }
+}
+```
+
+**In „Dateien“ sichern:** Die System-Ordnerauswahl kopiert eine oder mehrere Dateien in
+den gewählten Ordner.
+
+```swift
+struct SaveToFilesView: UIViewControllerRepresentable {
+    let files: [URL]   // ein PDF oder alle Teile
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        UIDocumentPickerViewController(forExporting: files, asCopy: true)
+    }
+    func updateUIViewController(_ vc: UIDocumentPickerViewController, context: Context) {}
+}
+```
+
+**Per Mail senden:**
+
+```swift
+import MessageUI
+
+struct MailView: UIViewControllerRepresentable {
+    let subject: String
+    let attachments: [URL]
+    var recipients: [String] = []
+    let onFinish: (MFMailComposeResult) -> Void
+
+    static var canSend: Bool { MFMailComposeViewController.canSendMail() }
+
+    func makeUIViewController(context: Context) -> MFMailComposeViewController {
+        let mail = MFMailComposeViewController()
+        mail.mailComposeDelegate = context.coordinator
+        mail.setSubject(subject)
+        mail.setToRecipients(recipients)
+        for url in attachments {
+            if let data = try? Data(contentsOf: url) {
+                mail.addAttachmentData(data, mimeType: "application/pdf",
+                                       fileName: url.lastPathComponent)
+            }
+        }
+        return mail
+    }
+    func updateUIViewController(_ vc: MFMailComposeViewController, context: Context) {}
+    func makeCoordinator() -> Coordinator { Coordinator(onFinish: onFinish) }
+
+    final class Coordinator: NSObject, MFMailComposeViewControllerDelegate {
+        let onFinish: (MFMailComposeResult) -> Void
+        init(onFinish: @escaping (MFMailComposeResult) -> Void) { self.onFinish = onFinish }
+
+        func mailComposeController(_ controller: MFMailComposeViewController,
+                                   didFinishWith result: MFMailComposeResult, error: Error?) {
+            onFinish(result)   // z. B. nächsten Teil öffnen oder Fenster schließen
+        }
+    }
+}
+```
+
+Ist `MailView.canSend` falsch (kein Konto in Apple Mail), zeigt die App stattdessen das
+Teilen-Menü mit denselben Dateien. Bei „Jeden Teil als eigene Mail“ öffnet `onFinish`
+nach dem Senden von Teil 1 automatisch das Fenster für Teil 2.
+
 ## 5. Datenschutz
 
 - Alles passiert lokal auf dem Gerät, keine Daten verlassen das iPhone (außer der
@@ -360,7 +518,10 @@ die App.
 | Speicher läuft voll bei vielen großen Fotos (ein 48-MP-Foto belegt dekodiert ~190 MB) | Fotos nie alle gleichzeitig laden; mit ImageIO (`CGImageSourceCreateThumbnailAtIndex`) direkt auf die benötigte Auflösung verkleinert laden; PDF seitenweise direkt in eine Datei schreiben (siehe Code) |
 | Große PDF-Dateien | Eingebauter Kompressor (2.4): Fotos auf Zielauflösung herunterrechnen + JPEG-Kompression; danach harte 30-MB-Grenze mit automatischer Aufteilung |
 | Geschätzte Größe weicht von echter ab | Schätzung nur für Vorschau und Aufteilungsplan; entscheidend ist die gemessene Dateigröße, zu große Teile werden nachträglich weiter aufgeteilt |
-| Empfänger bekommt mehrere Dateien | klare Namen „Teil 1 von 2“, alle Teile werden in einem Rutsch geteilt |
+| Empfänger bekommt mehrere Dateien | klare Namen „Teil 1 von 2“, alle Teile werden in einem Rutsch gesichert bzw. geteilt |
+| Mail wird wegen Größe abgelehnt | aufgeteilte PDFs standardmäßig als eine Mail pro Teil senden; optional Mail Drop |
+| Kein Konto in Apple Mail eingerichtet | automatisch auf das Teilen-Menü ausweichen (Gmail, Outlook usw.) |
+| Ungültige Zeichen im eingegebenen Namen | werden automatisch ersetzt, leerer Name fällt auf den Vorschlag zurück |
 | Fotos liegen nur in iCloud | Der Picker lädt sie nach; Fortschrittsanzeige einbauen |
 | Falsche Drehung (EXIF-Ausrichtung) | ImageIO-Option `kCGImageSourceCreateThumbnailWithTransform` berücksichtigt sie automatisch |
 | HEIC-, Live- und RAW-Fotos | HEIC/Live: problemlos (Standbild wird verwendet); RAW: als JPEG-Vorschau laden |
@@ -372,12 +533,12 @@ Schätzung für eine Person mit iOS-Erfahrung:
 
 | Phase | Inhalt | Aufwand |
 |---|---|---|
-| **1 – MVP** | Fotoauswahl, Raster (Vorlagen + eigenes, Standard 2×2), Rand, Abstand, Einpassen/Füllen, Hoch/Quer, ein gemeinsames PDF, Teilen-Menü, **Kompressor, 30-MB-Grenze mit automatischer Aufteilung** | ca. 8–11 Personentage |
-| **2 – Komfort** | Live-Vorschau mit PDFKit, Umsortieren per Drag & Drop, „ein PDF pro Foto“, Größenanzeige vor dem Export, Einstellungen merken, Auto-Drehen | ca. 4–6 Personentage |
+| **1 – MVP** | Fotoauswahl, Raster (Vorlagen + eigenes, Standard 2×2), Rand, Abstand, Einpassen/Füllen, Hoch/Quer, ein gemeinsames PDF, **Kompressor, 30-MB-Grenze mit automatischer Aufteilung, PDF selbst benennen, in „Dateien“ sichern, per Mail senden (inkl. eine Mail pro Teil)**, Teilen-Menü | ca. 10–13 Personentage |
+| **2 – Komfort** | Live-Vorschau mit PDFKit, Umsortieren per Drag & Drop, „ein PDF pro Foto“, Größenanzeige vor dem Export, Einstellungen merken, Auto-Drehen, Liste „Meine PDFs“ (umbenennen, erneut senden) | ca. 5–8 Personentage |
 | **3 – Feinschliff** | App-Icon, Dark Mode, iPad-Layout, Lokalisierung DE/EN, Barrierefreiheit, Tests, App-Store-Einreichung | ca. 4–6 Personentage |
 | Optional | Rahmen, Bildunterschriften, Seitenzahlen, weitere Papierformate | je 0,5–2 Tage |
 
-**Gesamt bis zur App-Store-reifen Version: etwa 3,5–4,5 Wochen.**
+**Gesamt bis zur App-Store-reifen Version: etwa 4–5 Wochen.**
 
 ## 9. Was du zum Starten brauchst
 
@@ -393,8 +554,8 @@ Schätzung für eine Person mit iOS-Erfahrung:
 
 Umsetzen. Die Anforderungen passen sehr gut zu dem, was iOS von Haus aus kann; das
 technische Risiko ist gering. Empfohlener Einstieg ist das **MVP aus Phase 1** mit einem
-einzigen Editor-Bildschirm, 2×2 als Standard und dem Kompressor samt 30-MB-Grenze von
-Anfang an. Damit ist der Hauptnutzen sofort da,
+einzigen Editor-Bildschirm, 2×2 als Standard, dem Kompressor samt 30-MB-Grenze sowie
+Benennen, Sichern in „Dateien“ und Mail-Versand von Anfang an. Damit ist der Hauptnutzen sofort da,
 der Rest kann schrittweise ergänzt werden.
 
 ### Offene Fragen an dich
@@ -408,3 +569,9 @@ der Rest kann schrittweise ergänzt werden.
    (z. B. 10 / 20 / 25 / 30 MB), mit 30 MB als Standard?
 6. Wenn selbst 2 Teile nicht reichen: automatisch 3, 4, … Teile (so wie geplant)
    oder lieber stärker komprimieren, damit es bei 2 Teilen bleibt?
+7. Welche Mail-App nutzt du (Apple Mail, Gmail, Outlook …)? Davon hängt ab, ob das
+   eingebaute Mail-Fenster oder das Teilen-Menü der Hauptweg wird.
+8. Gibt es feste Empfänger (z. B. immer dieselbe Adresse), die vorausgefüllt sein
+   sollen, oder einen Standard-Betreff / Standard-Text für die Mail?
+9. Soll die App eine eigene Liste „Meine PDFs“ führen, um frühere PDFs später
+   umzubenennen oder erneut zu senden (Phase 2)?
